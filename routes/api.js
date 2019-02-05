@@ -17,19 +17,19 @@ const CONNECTION_STRING = process.env.DB //MongoClient.connect(CONNECTION_STRING
 module.exports = function(app) {
     app.route('/api/issues/:project')
 
-        .get(function(req, res) {
+        .get((req, res) => {
             const project = req.params.project
         })
 
-        .post(function(req, res) {
+        .post((req, res) => {
             const project = req.params.project
         })
 
-        .put(function(req, res) {
+        .put((req, res) => {
             const project = req.params.project
         })
 
-        .delete(function(req, res) {
+        .delete((req, res) => {
             const project = req.params.project
         })
 }
