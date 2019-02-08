@@ -12,9 +12,7 @@ const expect = require('chai').expect
 const MongoClient = require('mongodb')
 const ObjectId = require('mongodb').ObjectID
 
-const CONNECTION_STRING =
-    process.env.DB ||
-    'mongodb://admin:admin123@ds121415.mlab.com:21415/fcc-infosec-challenges' //MongoClient.connect(CONNECTION_STRING, function(err, db) {});
+const CONNECTION_STRING = process.env.DB //MongoClient.connect(CONNECTION_STRING, function(err, db) {});
 
 module.exports = function(app) {
     app.route('/api/issues/:project')
