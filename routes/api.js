@@ -38,19 +38,25 @@ module.exports = function(app) {
                 queryParams._id = ObjectId(queryParams._id)
             }
 
-            MongoClient.connect(CONNECTION_STRING, (err, db) => {
-                db.collection(project)
-                    .find(queryParams)
-                    .toArray((err, docs) => {
-                        if (err) {
-                            console.log(err)
-                        }
-                        res.status(200)
-                        res.json(docs)
+            MongoClient.connect(
+                CONNECTION_STRING,
+                (err, db) => {
+                    db.collection(project)
+                        .find(queryParams)
+                        .toArray((err, docs) => {
+                            if (err) {
+                                db.close()
+                                return res
+                                    .status(400)
+                                    .type('text')
+                                    .send('error getting docs')
+                            }
 
-                        db.close()
-                    })
-            })
+                            db.close()
+                            return res.status(200).json(docs)
+                        })
+                }
+            )
         })
 
         .post((req, res) => {
@@ -64,9 +70,10 @@ module.exports = function(app) {
             } = req.body
 
             if (!issue_title || !issue_text || !created_by) {
-                res.status(400)
-                res.type('text')
-                res.send('missing required inputs')
+                return res
+                    .status(400)
+                    .type('text')
+                    .send('missing required inputs')
             }
 
             const newEntry = {
@@ -85,34 +92,29 @@ module.exports = function(app) {
                 !checkValid(issue_text) ||
                 !checkValid(created_by)
             ) {
-                res.status(400)
-                res.type('text')
-                res.send('missing required inputs')
+                return res
+                    .status(400)
+                    .type('text')
+                    .send('missing required inputs')
             }
 
-            // if (!checkValid(assigned_to)) {
-            //     newEntry.assigned_to = ''
-            // }
-            // if (!checkValid(status_text)) {
-            //     newEntry.status_text = ''
-            // }
+            MongoClient.connect(
+                CONNECTION_STRING,
+                (err, db) => {
+                    db.collection(project).insertOne(newEntry, (err, doc) => {
+                        if (err) {
+                            db.close()
+                            return res
+                                .status(400)
+                                .type('html')
+                                .send(`Error: ${err}`)
+                        }
 
-            MongoClient.connect(CONNECTION_STRING, (err, db) => {
-                db.collection(project).insertOne(newEntry, (err, doc) => {
-                    if (err) {
                         db.close()
-                        res.status(400)
-                        res.type('html')
-                        res.send(`Error: ${err}`)
-                    }
-
-                    res.status(200)
-                    res.json(doc.ops[0])
-
-                    console.log('_id: ', doc.ops[0])
-                    db.close()
-                })
-            })
+                        return res.status(200).json(doc.ops[0])
+                    })
+                }
+            )
         })
 
         .put((req, res) => {
@@ -130,9 +132,10 @@ module.exports = function(app) {
             try {
                 ObjectId(_id)
             } catch (err) {
-                res.status(400)
-                res.type('text')
-                res.send(`could not update ${_id}`)
+                return res
+                    .type('text')
+                    .status(400)
+                    .send(`could not update ${_id}`)
             }
 
             const updatedEntry = {}
@@ -157,76 +160,83 @@ module.exports = function(app) {
             }
 
             if (Object.keys(updatedEntry).length === 0) {
-                res.status(400)
-                res.type('text')
-                res.send('no updated fields')
+                return res
+                    .type('text')
+                    .status(400)
+                    .send('no updated fields')
             }
 
             updatedEntry.updated_on = new Date()
 
-            MongoClient.connect(CONNECTION_STRING, (err, db) => {
-                db.collection(project).findOneAndUpdate(
-                    { _id: ObjectId(_id) }, //filter
-                    updatedEntry, //update
-                    (err, doc) => {
-                        if (err) {
+            MongoClient.connect(
+                CONNECTION_STRING,
+                (err, db) => {
+                    db.collection(project).findOneAndUpdate(
+                        { _id: ObjectId(_id) }, //filter
+                        updatedEntry, //update
+                        (err, doc) => {
+                            if (err) {
+                                db.close()
+                                return res
+                                    .type('text')
+                                    .status(400)
+                                    .send('no updated fields')
+                            }
+
                             db.close()
-
-                            res.status(400)
-                            res.type('text')
-                            res.send('no updated fields')
+                            return res
+                                .type('text')
+                                .status(200)
+                                .send('successfully updated')
                         }
-
-                        db.close()
-
-                        res.status(200)
-                        res.type('text')
-                        res.send('successfully updated')
-                    }
-                )
-            })
+                    )
+                }
+            )
         })
 
         .delete((req, res) => {
             const project = req.params.project
             const _id = req.body._id
 
-            console.log('1 deleting')
-
             if (!checkValid(_id)) {
-                res.status(400)
-                res.type('text')
-                res.send('_id error')
+                return res
+                    .status(400)
+                    .type('text')
+                    .send('_id error')
             }
 
             try {
                 ObjectId(_id)
             } catch (err) {
-                res.status(400)
-                res.type('text')
-                res.send('_id error')
+                return res
+                    .status(400)
+                    .type('text')
+                    .send('_id error')
             }
 
-            MongoClient.connect(CONNECTION_STRING, (err, db) => {
-                db.collection(project).findOneAndDelete(
-                    { _id: ObjectId(_id) },
-                    (err, doc) => {
-                        if (err) {
-                            res.status(400)
-                            res.type('text')
-                            res.send(`could not delete ${_id}`)
+            MongoClient.connect(
+                CONNECTION_STRING,
+                (err, db) => {
+                    db.collection(project).findOneAndDelete(
+                        { _id: ObjectId(_id) },
+                        (err, doc) => {
+                            if (err) {
+                                db.close()
+                                return res
+                                    .status(400)
+                                    .type('text')
+                                    .send(`could not delete ${_id}`)
+                            }
 
                             db.close()
+                            return res
+                                .status(200)
+                                .type('text')
+                                .send(`deleted ${_id}`)
                         }
-
-                        res.status(200)
-                        res.type('text')
-                        res.send(`deleted ${_id}`)
-
-                        db.close()
-                    }
-                )
-            })
+                    )
+                }
+            )
         })
 }
 

@@ -144,7 +144,12 @@ suite('Functional Tests', function() {
         test('Multiple fields to update', function(done) {
             chai.request(server)
                 .put('/api/issues/test')
-                .send({ _id: _id, issue_text: 'updated text', open: false })
+                .send({
+                    _id: _id,
+                    issue_title: 'updated title',
+                    issue_text: 'updated text',
+                    open: false,
+                })
                 .end((err, res) => {
                     assert.equal(res.status, 200)
 
