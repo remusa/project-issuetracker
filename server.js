@@ -24,7 +24,6 @@ app.use(
         frameguard: { action: 'deny' },
     })
 )
-
 app.use(helmet.xssFilter({ setOnOldIE: true }))
 app.use(helmet.noSniff())
 
