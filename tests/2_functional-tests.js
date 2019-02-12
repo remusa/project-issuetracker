@@ -16,6 +16,7 @@ chai.use(chaiHttp)
 
 suite('Functional Tests', function() {
     suite('POST /api/issues/{project} => object with issue data', function() {
+      
         test('Every field filled in', function(done) {
             chai.request(server)
                 .post('/api/issues/test')
@@ -112,9 +113,11 @@ suite('Functional Tests', function() {
                     done()
                 })
         })
+      
     })
 
     suite('PUT /api/issues/{project} => text', function() {
+      
         test('No body', function(done) {
             chai.request(server)
                 .put('/api/issues/test')
@@ -146,23 +149,22 @@ suite('Functional Tests', function() {
                 .put('/api/issues/test')
                 .send({
                     _id: _id,
-                    issue_title: 'updated title',
                     issue_text: 'updated text',
                     open: false,
                 })
                 .end((err, res) => {
                     assert.equal(res.status, 200)
-
                     assert.equal(res.text, 'successfully updated')
-
                     done()
                 })
         })
+      
     })
 
     suite(
         'GET /api/issues/{project} => Array of objects with issue data',
         function() {
+          
             test('No filter', function(done) {
                 chai.request(server)
                     .get('/api/issues/test')
@@ -192,9 +194,7 @@ suite('Functional Tests', function() {
                     .query({ open: true })
                     .end(function(err, res) {
                         assert.equal(res.status, 200)
-
                         assert.isArray(res.body)
-
                         assert.property(res.body[0], 'issue_title')
                         assert.property(res.body[0], 'issue_text')
                         assert.property(res.body[0], 'created_on')
@@ -204,9 +204,7 @@ suite('Functional Tests', function() {
                         assert.property(res.body[0], 'open')
                         assert.property(res.body[0], 'status_text')
                         assert.property(res.body[0], '_id')
-
                         assert.equal(res.body[0].open, true)
-
                         done()
                     })
             })
@@ -214,12 +212,10 @@ suite('Functional Tests', function() {
             test('Multiple filters (test for multiple fields you know will be in the db for a return)', function(done) {
                 chai.request(server)
                     .get('/api/issues/test')
-                    .query({ created_by: 'RMS', open: false })
+                    .query({ created_by: 'dante', open: false })
                     .end(function(err, res) {
                         assert.equal(res.status, 200)
-
                         assert.isArray(res.body)
-
                         assert.property(res.body[0], 'issue_title')
                         assert.property(res.body[0], 'issue_text')
                         assert.property(res.body[0], 'created_on')
@@ -229,17 +225,17 @@ suite('Functional Tests', function() {
                         assert.property(res.body[0], 'open')
                         assert.property(res.body[0], 'status_text')
                         assert.property(res.body[0], '_id')
-
-                        assert.equal(res.body[0].created_by, 'RMS')
+                        assert.equal(res.body[0].created_by, 'dante')
                         assert.equal(res.body[0].open, false)
-
                         done()
                     })
             })
+          
         }
     )
 
     suite('DELETE /api/issues/{project} => text', function() {
+      
         test('No _id', function(done) {
             chai.request(server)
                 .delete('/api/issues/test')
@@ -265,5 +261,6 @@ suite('Functional Tests', function() {
                     done()
                 })
         })
+      
     })
 })
