@@ -52,8 +52,9 @@ module.exports = function(app) {
                                     .send('error getting docs')
                             }
 
+                            res.status(200).json(docs)
                             db.close()
-                            return res.status(200).json(docs)
+                            return res
                         })
                 }
             )
